@@ -1,7 +1,5 @@
-import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_animations/app_database.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -11,50 +9,48 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  double mWidth = 100.0;
-  double mHeight = 100.0;
-  Color mColor = Colors.green;
-  List list = [Colors.yellow,Colors.blue,Colors.orange, Colors.green];
+ late AppDataBase myDB;
+ List<Map<String,dynamic>> arrNotes = [];
+ 
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    myDB = AppDataBase.db;
+    getNotes();
+
+  }
+
+  void addNote() async{
+   bool check = await myDB.addNote('Flutter', 'New flutter note');
+   if(check){
+    arrNotes = await myDB.fetchAllNotes();
+    setState(() {
+      
+    });
+   }
+  }
+
+  void getNotes() async{
+     arrNotes = await myDB.fetchAllNotes();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Home Screen"),
-      ),
-      body: Center(
-        child: Column(
-          children: [
-            InkWell(
-              child: AnimatedContainer(
-                  child: Text("Click"),
-                  duration: Duration(seconds: 2),
-                  width: mWidth,
-                  height: mHeight,
-                  color: mColor),
-              onTap: () {
-                // mHeight = mHeight == 100.0 ? 300.0 : 100.0;
-                // mWidth = mWidth == 100.0 ? 300.0 : 100.0;
-                // mColor = mColor == Colors.green ? Colors.yellow : Colors.green;
-                // setState(() {});
-
-                // Timer(Duration(seconds: 2), () {
-                //   mHeight = mHeight == 100.0 ? 300.0 : 100.0;
-                //   mWidth = mWidth == 100.0 ? 300.0 : 100.0;
-                //   mColor =
-                //       mColor == Colors.green ? Colors.yellow : Colors.green;
-                //   setState(() {});
-                // });
-
-                // Random Color
-                double random = list[Random().nextInt(list.length-1)];
-                mWidth = random;
-                mHeight = random;
-                mColor = list[Random().nextInt(list.length-1)];
-              },
-            )
-          ],
-        ),
-      ),
+      appBar: AppBar(title: Text("Database"),),
+      body: ListView.builder(
+        itemCount: arrNotes.length,
+        itemBuilder: (_,index){
+        return ListTile(
+          title: Text('${arrNotes[index]['title']}'),
+          subtitle: Text('${arrNotes[index]['desc']}'), 
+        );  
+      }),
+      floatingActionButton: FloatingActionButton(onPressed: (){
+        addNote();
+      },child: const Icon(Icons.add),),
     );
   }
 }
